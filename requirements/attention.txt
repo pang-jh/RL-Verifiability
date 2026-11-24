@@ -1,0 +1,2 @@
+# Install after torch, with --no-build-isolation, in the policy environment.
+flash-attn==2.8.3.post1

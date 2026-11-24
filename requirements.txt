@@ -1,0 +1,28 @@
+# Main policy training/evaluation environment. Use Python 3.10.
+# Install CUDA-compatible torch/vLLM first; see README.md.
+accelerate==1.15.0
+codetiming==1.4.0
+datasets==5.0.1
+einops==0.8.2
+jinja2
+liger-kernel==0.8.3
+mathruler==0.1.0
+numpy==2.2.6
+omegaconf==2.3.1
+packaging==26.3
+pandas==2.3.3
+peft==0.21.0
+pillow==12.3.0
+pyarrow==25.0.1
+pylatexenc==2.11
+qwen-vl-utils==0.0.14
+ray[default]==2.58.0
+requests==2.34.2
+safetensors==0.8.0
+tensordict==0.14.2
+torch==2.8.0
+torchdata==0.11.0
+tqdm==4.70.1
+transformers==4.57.6
+vllm==0.11.0
+wandb==0.30.0
