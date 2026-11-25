@@ -13,6 +13,29 @@ FIELDS = {"prompt", "question", "answer", "images", "acc", "task_type", "halluci
 SPLITS = ("train", "validation", "test")
 
 
+def validate_row(row):
+    """Validate the portable training schema without modifying a record."""
+    if not isinstance(row, dict) or set(row) != FIELDS:
+        raise ValueError("ITHV rows must contain exactly the eight documented fields")
+    for key in FIELDS - {"images", "acc"}:
+        if not isinstance(row[key], str) or not row[key].strip():
+            raise ValueError(f"Invalid {key}")
+    kind, acc = row["hallucination_type"], row["acc"]
+    if kind == "not_applicable":
+        if acc is not None:
+            raise ValueError("NA requires acc=null")
+    elif kind not in {"obvious", "elusive"} or type(acc) not in (float, int) or not math.isfinite(acc) or not 0 <= acc <= 1:
+        raise ValueError("OH/EH require a finite human accuracy in [0, 1]")
+    images = row["images"]
+    if not isinstance(images, list) or len(images) != 1 or not isinstance(images[0], str):
+        raise ValueError("Exactly one image path is required")
+    relative = PurePosixPath(images[0])
+    if not relative.parts or relative.is_absolute() or ".." in relative.parts or "\\" in images[0]:
+        raise ValueError("Release images must be safe relative POSIX paths")
+    if row["prompt"].count("<image>") != 1:
+        raise ValueError("Exactly one image placeholder is required")
+
+
 def read_rows(path, image_root=None, check_images=False):
     rows = []
     root = Path(image_root).expanduser().resolve() if image_root is not None else None
@@ -21,25 +44,9 @@ def read_rows(path, image_root=None, check_images=False):
             if not line.strip():
                 continue
             row = json.loads(line)
-            if set(row) != FIELDS:
-                raise ValueError("ITHV rows must contain exactly the eight documented fields")
-            for key in FIELDS - {"images", "acc"}:
-                if not isinstance(row[key], str) or not row[key].strip():
-                    raise ValueError(f"Invalid {key}")
-            kind, acc = row["hallucination_type"], row["acc"]
-            if kind == "not_applicable":
-                if acc is not None:
-                    raise ValueError("NA requires acc=null")
-            elif kind not in {"obvious", "elusive"} or type(acc) not in (float, int) or not math.isfinite(acc) or not 0 <= acc <= 1:
-                raise ValueError("OH/EH require a finite human accuracy in [0, 1]")
+            validate_row(row)
             images = row["images"]
-            if not isinstance(images, list) or len(images) != 1 or not isinstance(images[0], str):
-                raise ValueError("Exactly one image path is required")
             relative = PurePosixPath(images[0])
-            if not relative.parts or relative.is_absolute() or ".." in relative.parts or "\\" in images[0]:
-                raise ValueError("Release images must be safe relative POSIX paths")
-            if row["prompt"].count("<image>") != 1:
-                raise ValueError("Exactly one image placeholder is required")
             if root is not None:
                 # Relative paths cannot traverse upward; allow user-managed image
                 # directory symlinks just as the training dataset loader does.

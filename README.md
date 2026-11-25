@@ -13,9 +13,7 @@
 > - **Verifiability-aware policy optimization** maximizes correctness while controlling error risk on questions with lower human verification accuracy. An adaptive Lagrangian multiplier adjusts the penalty strength during training.
 > - **DAPO-V and GRPO-V** integrate this reward with multimodal policy learning. DAPO-V additionally monitors risk before dynamic group filtering.
 
-<p align="center">
-  <img src="framework.png" alt="outline" width="1000"/>
-</p>
+![outline](https://file%2B.vscode-resource.vscode-cdn.net/Users/pang/Downloads/framework.png)
 
 ### Supported models and methods
 
@@ -58,25 +56,6 @@ Download the desired backbone and Qwen3.5-9B weights, and supply their local dir
 ## Data preparation
 
 ITHV annotations are available on **[🤗 Hugging Face](https://huggingface.co/datasets/BeEnough/ITHV)** and **[🤖 ModelScope](https://www.modelscope.cn/datasets/Nothing07/ITHV)**.
-
-Training and evaluation use the fixed JSONL splits in `data/ithv/`.  
-Each JSONL record contains eight fields:
-
-```json
-{
-  "prompt": "<image>\nAn image-grounded question.",
-  "question": "An image-grounded question.",
-  "answer": "The reference answer.",
-  "images": ["AMBER/images/AMBER_1.jpg"],
-  "acc": 0.4,
-  "task_type": "short_answer",
-  "hallucination_type": "elusive",
-  "sample_id": "example_0001"
-}
-```
-
-`acc` is the empirical human accuracy. NH examples use `acc: null` and `hallucination_type: "not_applicable"`; OH and EH use `"obvious"` and `"elusive"`.
-
 Obtain the source images from [AMBER](https://github.com/junyangwang0410/AMBER) and [RealWorldQA](https://huggingface.co/datasets/xai-org/RealworldQA). Arrange them under a common image root:
 
 ```text
@@ -88,13 +67,17 @@ IMAGE_ROOT/
         └── images/
 ```
 
-Validate the splits and image paths:
+Generate the training, validation, and test splits:
 
 ```bash
-python -m examples.ithv.data --image-root /path/to/IMAGE_ROOT
+python -m examples.ithv.split_data \
+  --input-dir /path/to/ITHV \
+  --image-root /path/to/IMAGE_ROOT \
+  --output-dir data/ithv \
+  --seed 123
 ```
 
-Use `--data-dir /path/to/ithv_splits` to select another directory containing the same three JSONL filenames and schema.
+Images are grouped by decoded RGB content to prevent cross-split image leakage. The script writes `train.jsonl`, `validation.jsonl`, `test.jsonl`, and `manifest.json` to `data/ithv/`.
 
 ## Training
 

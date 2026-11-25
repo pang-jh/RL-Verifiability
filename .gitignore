@@ -11,7 +11,7 @@ dist/
 outputs/
 checkpoints/
 wandb/
-/models/
+models/
 images/
 .env
 .env.*
