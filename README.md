@@ -13,7 +13,9 @@
 > - **Verifiability-aware policy optimization** maximizes correctness while controlling error risk on questions with lower human verification accuracy. An adaptive Lagrangian multiplier adjusts the penalty strength during training.
 > - **DAPO-V and GRPO-V** integrate this reward with multimodal policy learning. DAPO-V additionally monitors risk before dynamic group filtering.
 
-![outline](https://file%2B.vscode-resource.vscode-cdn.net/Users/pang/Downloads/framework.png)
+<p align="center">
+  <img src="framework.png" alt="outline" width="1000"/>
+</p>
 
 ### Supported models and methods
 
